@@ -15,7 +15,7 @@ class Nodes(GameState):
             childState.col_status[j,i] = 1
         childState.player1_turn = not childState.player1_turn
 
-        self.children[(i, j)] = Nodes(childState)
+        self.children[(i, j, rowcol)] = Nodes(childState)
         
     def Populate(self, i, j, Child):
         self.children[(i,j)] = Child
