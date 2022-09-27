@@ -1,4 +1,5 @@
 from GameState import GameState
+from copy import deepcopy
 import numpy as np
 
 class Nodes(GameState):
@@ -9,7 +10,7 @@ class Nodes(GameState):
         
     
     def Make(self, i, j, rowcol):
-        childState = self.Current
+        childState = deepcopy(self.Current)
         val = 1
         playerModifier = 1
         pointScored = False
@@ -17,8 +18,7 @@ class Nodes(GameState):
         currentScore = 0
         if childState.player1_turn:
             playerModifier = -1
-            
-
+        
         if j < 3 and i < 3:
             childState.board_status[j][i] = (abs(childState.board_status[j][i]) + val) * playerModifier
             if abs(childState.board_status[j][i]) == 4:
@@ -43,6 +43,7 @@ class Nodes(GameState):
         else:
             nextTurn = childState.player1_turn
         
+
         count = 0
         for x in range (3):
             for y in range (4) :
@@ -57,7 +58,6 @@ class Nodes(GameState):
             player1_score = len(np.argwhere(self.board_status == -4))
             player2_score = len(np.argwhere(self.board_status == 4))
             currentScore = player2_score - player1_score
-            print(currentScore)
 
         self.Children[(i, j, rowcol)] = Nodes(childState.board_status, childState.row_status, childState.col_status, nextTurn)
         self.Children[(i, j, rowcol)].CurrentScore = currentScore

@@ -29,7 +29,8 @@ class MinimaxBot(Bot):
             for j in range (4):
                 if Node.Current.row_status[j,i] == 0 and (i,j,"row") not in Node.Children:
                     Node.Make(i, j, "row")
-                    #print("row", i, j)
+                    # print("row", i, j)
+                    # print(Node.Children[(i, j, "row")])
                     if Depth < 2 :
                         return GameAction("row", (i,j))
 
@@ -37,7 +38,8 @@ class MinimaxBot(Bot):
             for j in range (3):
                 if Node.Current.col_status[j,i] == 0 and (i,j,"col") not in Node.Children:
                     Node.Make(i, j, "col")
-                    #print("col", i, j)
+                    # print("col", i, j)
+                    # print(Node.Children[(i, j, "col")])
                     if Depth < 2 :
                         return GameAction("col", (i,j))
 
@@ -59,22 +61,25 @@ class MinimaxBot(Bot):
         return GameAction(rowcol, (i,j))
 
     def Maximum(self, Node, Depth, Alpha):
+        # print(Depth)
         if Depth == 0:
+            # print(Node.CurrentScore)
             return Node.CurrentScore
         
         for i in range (3):
             for j in range (4):
                 if Node.Current.row_status[j,i] == 0 and (i,j,"row") not in Node.Children:
                     Node.Make(i, j, "row")
-                    print("row", i, j)
+                    # print("row", i, j)
 
         for i in range (4):
             for j in range (3):
                 if Node.Current.col_status[j,i] == 0 and (i,j,"col") not in Node.Children:
                     Node.Make(i, j, "col")
-                    print("col", i, j)
+                    # print("col", i, j)
 
         Maximum_Score = -1000
+        # print(Node.Children)
         for k, z in Node.Children.items():
             Result = self.Minimum(z, Depth - 1, Maximum_Score)
             # print(k)
@@ -87,20 +92,22 @@ class MinimaxBot(Bot):
         return Maximum_Score
 
     def Minimum(self, Node, Depth, Beta):
+        # print(Depth)
         if Depth == 0:
+            # print(Node.CurrentScore)
             return Node.CurrentScore
         
         for i in range (3):
             for j in range (4):
                 if Node.Current.row_status[j,i] == 0 and (i,j,"row") not in Node.Children:
                     Node.Make(i, j, "row")
-                    print("row", i, j)
+                    # print("row", i, j)
 
         for i in range (4):
             for j in range (3):
                 if Node.Current.col_status[j,i] == 0 and (i,j,"col") not in Node.Children:
                     Node.Make(i, j, "col")
-                    print("col", i, j)
+                    # print("col", i, j)
 
         Minimum_Score = 1000
         for k, z in Node.Children.items():
