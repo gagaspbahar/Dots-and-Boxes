@@ -9,13 +9,14 @@ class Nodes(GameState):
         self.Children = {}
         
     
-    def Make(self, i, j, rowcol):
+    def Make(self, i, j, rowcol, temp):
         childState = deepcopy(self.Current)
         val = 1
         playerModifier = 1
         pointScored = False
         nextTurn = True
         currentScore = 0
+        threeLine = len(np.argwhere(abs(self.board_status) == 3))
         if childState.player1_turn:
             playerModifier = -1
         
@@ -58,6 +59,26 @@ class Nodes(GameState):
             player1_score = len(np.argwhere(self.board_status == -4))
             player2_score = len(np.argwhere(self.board_status == 4))
             currentScore = player2_score - player1_score
+
+        elif childState.player1_turn:
+            player1_score = len(np.argwhere(self.board_status == -4))
+            player2_score = len(np.argwhere(self.board_status == 4))
+            newThreeLine = len(np.argwhere(abs(self.board_status) == 3))
+            currentScore = player2_score - player1_score
+            if newThreeLine > threeLine:
+                currentScore += 10
+            if newThreeLine < threeLine:
+                currentScore -= 10
+
+        else :
+            player1_score = len(np.argwhere(self.board_status == -4))
+            player2_score = len(np.argwhere(self.board_status == 4))
+            newThreeLine = len(np.argwhere(abs(self.board_status) == 3))
+            currentScore = player2_score - player1_score
+            if newThreeLine > threeLine:
+                currentScore -= 10
+            if newThreeLine < threeLine:
+                currentScore += 10
 
         self.Children[(i, j, rowcol)] = Nodes(childState.board_status, childState.row_status, childState.col_status, nextTurn)
         self.Children[(i, j, rowcol)].CurrentScore = currentScore
