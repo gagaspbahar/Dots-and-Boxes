@@ -1,3 +1,4 @@
+from operator import indexOf
 from time import time
 from Bot import Bot
 from GameAction import GameAction
@@ -25,35 +26,54 @@ class MinimaxBot(Bot):
         # State = GameState(state.board_status, state.row_status, state.col_status, state.player1_turn)
         Node = Nodes(state.board_status, state.row_status, state.col_status, state.player1_turn)
         return self.get_minimax_action(Node, count, 1)
+    
+    def dynamic_depth_limit(self, depth) -> int:
+        if depth < 5:
+          return 4
+        elif depth < 11:
+          return 5
+        elif depth < 15:
+          return 6
+        elif depth < 16:
+          return 7
+        else:
+          return 8
 
-    def get_minimax_action(self, Node, Depth, Temp):
+
+    def get_minimax_action(self, Node, Height, Depth):
         start = time()
         print('==================new action')
         for i in range (3):
             for j in range (4):
-                if Node.Current.row_status[j,i] == 0 and (i,j,"row") not in Node.Children:
+                if Node.Current.row_status[j,i] == 0 and (i,j,"row") not in Node.Positions:
                     Node.Make(i, j, "row", self.player1_turn)
                     # print("row", i, j)
                     # print(Node.Children[(i, j, "row")])
-                    if Depth < 2 :
+                    if Height < 2 :
                         return GameAction("row", (i,j))
 
         for i in range (4):
             for j in range (3):
-                if Node.Current.col_status[j,i] == 0 and (i,j,"col") not in Node.Children:
+                if Node.Current.col_status[j,i] == 0 and (i,j,"col") not in Node.Positions:
                     Node.Make(i, j, "col", self.player1_turn)
                     # print("col", i, j)
                     # print(Node.Children[(i, j, "col")])
-                    if Depth < 2 :
+                    if Height < 2 :
                         return GameAction("col", (i,j))
 
         MaxScore = -1000
         i = 0
         j = 0
         rowcol = ""
-        for k, z in Node.Children.items():
-            # Result = self.Maximum(z, Depth - 1, Minimum_Score, Temp+1)
-            Result = self.Minimum(z, Depth - 1, MaxScore, Temp+1)
+        initialDepthLimit = self.dynamic_depth_limit(24-Height)
+        print("depth: ", initialDepthLimit)
+        print("turn: ", 24-Height)
+        # for _, z in Node.Children.items():
+        for idx in range(len(Node.Children)):
+            # Result = self.Maximum(z, Height - 1, Minimum_Score, Depth+1)
+            k = Node.Positions[idx]
+            z = Node.Children[idx]
+            Result = self.Minimum(z, Height - 1, MaxScore, Depth+1, initialDepthLimit)
             print(k, " ", Result)
             # if Minimum_Score > Result:
             #     Minimum_Score = Result
@@ -73,25 +93,25 @@ class MinimaxBot(Bot):
         print("taken: ", rowcol, (i,j))
         return GameAction(rowcol, (i,j))
 
-    def Maximum(self, Node, Depth, Alpha, Temp):
-        # print(Depth)
-        if Depth == 0 or Temp == 5:
+    def Maximum(self, Node, Height, Alpha, Depth, DepthLimit):
+        # print(Height)
+        if Height == 0 or Depth == DepthLimit:
             # print(Node.CurrentScore)
             return Node.CurrentScore
         
         for i in range (3):
             for j in range (4):
-                if Node.Current.row_status[j,i] == 0 and (i,j,"row") not in Node.Children:
+                if Node.Current.row_status[j,i] == 0 and (i,j,"row") not in Node.Positions:
                     Node.Make(i, j, "row", self.player1_turn)
 
         for i in range (4):
             for j in range (3):
-                if Node.Current.col_status[j,i] == 0 and (i,j,"col") not in Node.Children:
+                if Node.Current.col_status[j,i] == 0 and (i,j,"col") not in Node.Positions:
                     Node.Make(i, j, "col", self.player1_turn)
 
         Maximum_Score = -1000
-        for k, z in Node.Children.items():
-            Result = self.Minimum(z, Depth - 1, Maximum_Score, Temp + 1)
+        for z in Node.Children:
+            Result = self.Minimum(z, Height - 1, Maximum_Score, Depth + 1, DepthLimit)
             if Maximum_Score < Result:
                 Maximum_Score = Result
             if Result > Alpha:
@@ -99,32 +119,32 @@ class MinimaxBot(Bot):
         
         return Maximum_Score
 
-    def Minimum(self, Node, Depth, Beta, Temp):
-        # print(Depth)
-        if Depth == 0 or Temp == 5:
+    def Minimum(self, Node, Height, Beta, Depth, DepthLimit):
+        # print(Height)
+        if Height == 0 or Depth == DepthLimit:
             # print(Node.CurrentScore)
             return Node.CurrentScore
 
-        # if Temp == 5:
+        # if Depth == 5:
         #     player1_score = len(np.argwhere(Node.board_status == -4))
         #     player2_score = len(np.argwhere(Node.board_status == 4))
         #     return player2_score - player1_score
         
         for i in range (3):
             for j in range (4):
-                if Node.Current.row_status[j,i] == 0 and (i,j,"row") not in Node.Children:
+                if Node.Current.row_status[j,i] == 0 and (i,j,"row") not in Node.Positions:
                     Node.Make(i, j, "row", self.player1_turn)
                     # print("row", i, j)
 
         for i in range (4):
             for j in range (3):
-                if Node.Current.col_status[j,i] == 0 and (i,j,"col") not in Node.Children:
+                if Node.Current.col_status[j,i] == 0 and (i,j,"col") not in Node.Positions:
                     Node.Make(i, j, "col", self.player1_turn)
                     # print("col", i, j)
 
         Minimum_Score = 1000
-        for k, z in Node.Children.items():
-            Result = self.Maximum(z, Depth - 1, Minimum_Score, Temp + 1)
+        for z in Node.Children:
+            Result = self.Maximum(z, Height - 1, Minimum_Score, Depth + 1, DepthLimit)
 
             if Minimum_Score > Result:
                 Minimum_Score = Result
