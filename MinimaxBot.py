@@ -18,13 +18,10 @@ class MinimaxBot(Bot):
                 if state.col_status[j,i] == 1:
                     count += 1
         count = 24-count
-        # print(count)
-        # print(state.board_status)
-        # print(state.row_status)
-        # print(state.col_status)
-        # print(state.player1_turn)
-        # State = GameState(state.board_status, state.row_status, state.col_status, state.player1_turn)
+
         Node = Nodes(state.board_status, state.row_status, state.col_status, state.player1_turn)
+        if self.player1_turn:
+          print("GUE PLAYER 1")
         return self.get_minimax_action(Node, count, 1)
     
     def dynamic_depth_limit(self, depth) -> int:
@@ -32,6 +29,8 @@ class MinimaxBot(Bot):
           return 4
         elif depth < 11:
           return 5
+        # elif depth == 11:
+        #   return 7
         elif depth < 15:
           return 6
         elif depth < 16:
@@ -111,7 +110,10 @@ class MinimaxBot(Bot):
 
         Maximum_Score = -1000
         for z in Node.Children:
-            Result = self.Minimum(z, Height - 1, Maximum_Score, Depth + 1, DepthLimit)
+            if Node.Current.player1_turn == z.Current.player1_turn:
+                Result = self.Maximum(z, Height - 1, Alpha, Depth+1, DepthLimit)
+            else:
+                Result = self.Minimum(z, Height - 1, Maximum_Score, Depth + 1, DepthLimit)
             if Maximum_Score < Result:
                 Maximum_Score = Result
             if Result > Alpha:
@@ -144,7 +146,10 @@ class MinimaxBot(Bot):
 
         Minimum_Score = 1000
         for z in Node.Children:
-            Result = self.Maximum(z, Height - 1, Minimum_Score, Depth + 1, DepthLimit)
+            if Node.Current.player1_turn == z.Current.player1_turn:
+                Result = self.Minimum(z, Height - 1, Minimum_Score, Depth + 1, DepthLimit)
+            else:
+                Result = self.Maximum(z, Height - 1, Minimum_Score, Depth + 1, DepthLimit)
 
             if Minimum_Score > Result:
                 Minimum_Score = Result

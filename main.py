@@ -4,6 +4,7 @@
 # Modified by GaIB 19 Assistants
 
 from tkinter import *
+from LocalSearchBot import LocalSearchBot
 import numpy as np
 from typing import Optional
 from Bot import Bot
@@ -308,5 +309,6 @@ class Dots_and_Boxes():
         self.update(action.action_type, action.position)
 
 if __name__ == "__main__":
-    game_instance = Dots_and_Boxes(None, MinimaxBot())
+    # game_instance = Dots_and_Boxes(RandomBot(), MinimaxBot())
+    game_instance = Dots_and_Boxes(RandomBot(), LocalSearchBot())
     game_instance.mainloop()

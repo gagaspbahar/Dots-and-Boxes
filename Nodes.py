@@ -54,12 +54,13 @@ class Nodes(GameState):
         #         if childState.col_status[y,x] == 1:
         #             count += 1
 
+        # TURN = FALSE
         enemy_score = len(argwhere(self.board_status == -4))
         player_score = len(argwhere(self.board_status == 4))
         currentScore = 20*(player_score - enemy_score)
 
         if player_score + enemy_score != 9:
-            if childState.player1_turn == turn:
+            if childState.player1_turn != turn:
                 newThreeLine = len(argwhere(abs(self.board_status) == 3))
                 currentScore += 10*(newThreeLine - threeLine)
             else :
