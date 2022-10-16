@@ -26,6 +26,7 @@ class MinimaxBot(Bot):
         return self.get_minimax_action(Node, count, 1)
 
     def get_minimax_action(self, Node, Depth, Temp):
+        print('==================new action')
         for i in range (3):
             for j in range (4):
                 if Node.Current.row_status[j,i] == 0 and (i,j,"row") not in Node.Children:
@@ -44,21 +45,29 @@ class MinimaxBot(Bot):
                     if Depth < 2 :
                         return GameAction("col", (i,j))
 
-        Minimum_Score = 1000
+        MaxScore = -1000
         i = 0
         j = 0
         rowcol = ""
         for k, z in Node.Children.items():
-            Result = self.Maximum(z, Depth - 1, Minimum_Score, Temp+1)
-            # print(k)
-            # print(Result)
-            if Minimum_Score > Result:
-                Minimum_Score = Result
+            # Result = self.Maximum(z, Depth - 1, Minimum_Score, Temp+1)
+            Result = self.Minimum(z, Depth - 1, MaxScore, Temp+1)
+            # print(k, " ", Result)
+            # if Minimum_Score > Result:
+            #     Minimum_Score = Result
+            #     i = k[0]
+            #     j = k[1]
+            #     rowcol = k[2]
+            if MaxScore < Result:
+                MaxScore = Result
                 i = k[0]
                 j = k[1]
                 rowcol = k[2]
+            # print("min: ", Minimum_Score)
+            # print("max: ", MaxScore)
 
         # print(rowcol, (i,j))
+        # print("taken: ", rowcol, (i,j))
         return GameAction(rowcol, (i,j))
 
     def Maximum(self, Node, Depth, Alpha, Temp):
