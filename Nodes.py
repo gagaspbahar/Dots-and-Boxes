@@ -9,7 +9,7 @@ class Nodes(GameState):
         self.Children = {}
         
     
-    def Make(self, i, j, rowcol, temp):
+    def Make(self, i, j, rowcol, turn):
         childState = deepcopy(self.Current)
         val = 1
         playerModifier = 1
@@ -17,7 +17,7 @@ class Nodes(GameState):
         nextTurn = True
         currentScore = 0
         threeLine = len(np.argwhere(abs(self.board_status) == 3))
-        if childState.player1_turn:
+        if childState.player1_turn != turn:
             playerModifier = -1
         
         if j < 3 and i < 3:
@@ -45,42 +45,27 @@ class Nodes(GameState):
             nextTurn = childState.player1_turn
         
 
-        count = 0
-        for x in range (3):
-            for y in range (4) :
-                if childState.row_status[y,x] == 1:
-                    count += 1
-        for x in range (4):
-            for y in range (3) :
-                if childState.col_status[y,x] == 1:
-                    count += 1
+        # count = 0
+        # for x in range (3):
+        #     for y in range (4) :
+        #         if childState.row_status[y,x] == 1:
+        #             count += 1
+        # for x in range (4):
+        #     for y in range (3) :
+        #         if childState.col_status[y,x] == 1:
+        #             count += 1
 
-        if count == 24:
-            player1_score = len(np.argwhere(self.board_status == -4))
-            player2_score = len(np.argwhere(self.board_status == 4))
-            currentScore = player2_score - player1_score
+        enemy_score = len(np.argwhere(self.board_status == -4))
+        player_score = len(np.argwhere(self.board_status == 4))
+        currentScore = 20*(player_score - enemy_score)
 
-        elif childState.player1_turn:
-            player1_score = len(np.argwhere(self.board_status == -4))
-            player2_score = len(np.argwhere(self.board_status == 4))
-            newThreeLine = len(np.argwhere(abs(self.board_status) == 3))
-            currentScore = 20*(player2_score - player1_score)
-            currentScore += 10*(newThreeLine - threeLine)
-            # if newThreeLine > threeLine:
-            #     currentScore += 10
-            # if newThreeLine < threeLine:
-            #     currentScore -= 10
-
-        else :
-            player1_score = len(np.argwhere(self.board_status == -4))
-            player2_score = len(np.argwhere(self.board_status == 4))
-            newThreeLine = len(np.argwhere(abs(self.board_status) == 3))
-            currentScore = 20*(player2_score - player1_score)
-            currentScore -= 10*(newThreeLine - threeLine)
-            # if newThreeLine > threeLine:
-            #     currentScore -= 10
-            # if newThreeLine < threeLine:
-            #     currentScore += 10
+        if player_score + enemy_score != 9:
+            if childState.player1_turn == turn:
+                newThreeLine = len(np.argwhere(abs(self.board_status) == 3))
+                currentScore += 10*(newThreeLine - threeLine)
+            else :
+                newThreeLine = len(np.argwhere(abs(self.board_status) == 3))
+                currentScore -= 10*(newThreeLine - threeLine)
 
         self.Children[(i, j, rowcol)] = Nodes(childState.board_status, childState.row_status, childState.col_status, nextTurn)
         self.Children[(i, j, rowcol)].CurrentScore = currentScore
