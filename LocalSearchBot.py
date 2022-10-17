@@ -7,22 +7,12 @@ from numpy import argwhere, random, exp
 from copy import deepcopy
 
 class LocalSearchBot(Bot):
-    
-    def __init__(self):
-        # TODO reset temperature
-        self.temperature = 100
-        self.temperatureDecrease = 5
 
     def get_action(self, GS: GameState) -> GameAction:
-        self.chosen_edge_row = [i for i in range(12)]
-        self.chosen_edge_col = [i for i in range(12)]
         self.state = GameState(GS.board_status, GS.row_status, GS.col_status, GS.player1_turn)
         self.player1_turn = self.state.player1_turn
         
         return self.get_localsearch_action(self.state)
-
-    def simulated_annealing(self, cost_difference, threshold):
-        return cost_difference > 0 or exp(-cost_difference / self.temperature) >= threshold
 
     def objective_function(self, board_status):
         currentScore = 0
@@ -74,63 +64,34 @@ class LocalSearchBot(Bot):
         start = time()
         print("START")
         currScore = self.objective_function(state.board_status)
-        succScore = 0
+        k = 0
+        l = 0
+        rowcol = ""
+        print("currScore awal : ", currScore)
 
-        orient = random.randint(0,2)
-        success = False
+        # Loop semua neighbor state
+        for i in range (3):
+            for j in range (4):
+                if state.row_status[j,i] == 0 and (i,j,"row") :
+                    succScore = self.objective_function(self.Move(i,j,"row",self.player1_turn).board_status)
+                    if succScore > currScore:
+                        currScore = succScore
+                        k = i
+                        l = j
+                        rowcol = "row"
+                        print("succscore (",k," ",l," :",  succScore)
+        
+        for i in range (4):
+            for j in range (3):
+                if state.col_status[j,i] == 0 and (i,j,"col"):
+                    succScore = self.objective_function(self.Move(i,j,"col",self.player1_turn).board_status)
+                    if succScore > currScore:
+                        currScore = succScore
+                        k = i
+                        l = j
+                        rowcol = "col"
+                        print("succscore (",k," ",l," :",  succScore)
 
-        print("orient :",orient)
-        if 0 not in state.row_status:
-            orient = 1
-        if 0 not in state.col_status:
-            orient = 0
-
-        if orient == 0:
-
-            # TODO : Randomize nya diatur, biar ga random hal yang saa lagi
-            while not success:
-                print(self.chosen_edge_row)
-                chosen_row = random.choice(self.chosen_edge_row)
-                i,j = chosen_row % 3 , chosen_row // 3
-                if state.row_status[j][i] == 1:
-                    self.chosen_edge_row.remove(chosen_row)
-                    continue
-                neighborState = self.Move(i,j ,'row', False) # TODO : False placeholder dulu
-                succScore = self.objective_function(neighborState.board_status)
-                success = self.simulated_annealing(succScore - currScore, 0.5)
-
-                if success :
-                    self.state = neighborState
-                    # self.chosen_edge_row.remove(chosen_row)
-
-                    # TODO : T turunin gmn
-                    self.temperature -= self.temperatureDecrease
-
-                    print(self.chosen_edge_row)
-                    print("timetaken:", time() - start)
-                    print("taken: ", 'row', (i,j))
-                    return GameAction('row', (i,j))
-            
-        else:        
-            while not success:
-                chosen_col = random.choice(self.chosen_edge_col)
-                i,j = chosen_col % 4 , chosen_col // 4
-                if state.col_status[j][i] == 1:
-                    self.chosen_edge_col.remove(chosen_col)
-                    continue
-                neighborState = self.Move(i,j,'col', False) # TODO : False placeholder dulu
-                succScore = self.objective_function(neighborState.board_status)
-                success = self.simulated_annealing(succScore - currScore, 0.5)
-
-                if success : 
-                    self.state = neighborState
-                    # self.chosen_edge_col.remove(chosen_col)
-
-                    # TODO : T turunin gmn
-                    self.temperature -= self.temperatureDecrease
-
-                    print(self.chosen_edge_col)
-                    print("timetaken:", time() - start)
-                    print("taken: ", 'col', (i,j))
-                    return GameAction('col',(i,j))
-
+        print("timetaken:", time() - start)
+        print("taken: ", 'row', (k,l))
+        return GameAction(rowcol, (k,l))
