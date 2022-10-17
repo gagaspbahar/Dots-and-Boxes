@@ -1,3 +1,4 @@
+import heapq
 from operator import indexOf
 from time import time
 from Bot import Bot
@@ -19,15 +20,16 @@ class MinimaxBot(Bot):
                     count += 1
         count = 24-count
 
+        # Node = Nodes(state.board_status, state.row_status, state.col_status, state.player1_turn, minimax, currentScore, position)
         Node = Nodes(state.board_status, state.row_status, state.col_status, state.player1_turn)
-        if self.player1_turn:
-          print("GUE PLAYER 1")
-        return self.get_minimax_action(Node, count, 1)
+        return self.get_minimax_action(Node, count, 1)  
     
     def dynamic_depth_limit(self, depth) -> int:
-        if depth < 5:
+        if depth < 8:
           return 4
-        elif depth < 11:
+        # if depth == 5:
+        #   return 5
+        elif depth < 12:
           return 5
         # elif depth == 11:
         #   return 7
@@ -36,7 +38,7 @@ class MinimaxBot(Bot):
         elif depth < 16:
           return 7
         else:
-          return 8
+          return 25 - depth
 
 
     def get_minimax_action(self, Node, Height, Depth):
@@ -61,6 +63,7 @@ class MinimaxBot(Bot):
                         return GameAction("col", (i,j))
 
         MaxScore = -1000
+        # MinScore = 1000
         i = 0
         j = 0
         rowcol = ""
@@ -68,10 +71,11 @@ class MinimaxBot(Bot):
         print("depth: ", initialDepthLimit)
         print("turn: ", 24-Height)
         # for _, z in Node.Children.items():
-        for idx in range(len(Node.Children)):
+        for _ in range(len(Node.Children)):
             # Result = self.Maximum(z, Height - 1, Minimum_Score, Depth+1)
-            k = Node.Positions[idx]
-            z = Node.Children[idx]
+            data = heapq.heappop(Node.Children)
+            k = data.Position
+            z = data
             Result = self.Minimum(z, Height - 1, MaxScore, Depth+1, initialDepthLimit)
             print(k, " ", Result)
             # if Minimum_Score > Result:
@@ -86,6 +90,7 @@ class MinimaxBot(Bot):
                 rowcol = k[2]
             # print("min: ", Minimum_Score)
             print("max: ", MaxScore)
+            print("treeline", data.ScoreWithThreeline)
 
         # print(rowcol, (i,j))
         print("timetaken:", time() - start)
@@ -108,17 +113,22 @@ class MinimaxBot(Bot):
                 if Node.Current.col_status[j,i] == 0 and (i,j,"col") not in Node.Positions:
                     Node.Make(i, j, "col", self.player1_turn)
 
+        Minimum_Score = 1000
         Maximum_Score = -1000
-        for z in Node.Children:
+        for _ in range(len(Node.Children)):
+            z = heapq.heappop(Node.Children)    
             if Node.Current.player1_turn == z.Current.player1_turn:
-                Result = self.Maximum(z, Height - 1, Alpha, Depth+1, DepthLimit)
+                Result = self.Maximum(z, Height - 1, Minimum_Score, Depth+1, DepthLimit)
+                if Minimum_Score > Result:
+                    Minimum_Score = Result
             else:
                 Result = self.Minimum(z, Height - 1, Maximum_Score, Depth + 1, DepthLimit)
+            
             if Maximum_Score < Result:
                 Maximum_Score = Result
             if Result > Alpha:
                 return Result
-        
+
         return Maximum_Score
 
     def Minimum(self, Node, Height, Beta, Depth, DepthLimit):
@@ -143,18 +153,22 @@ class MinimaxBot(Bot):
                 if Node.Current.col_status[j,i] == 0 and (i,j,"col") not in Node.Positions:
                     Node.Make(i, j, "col", self.player1_turn)
                     # print("col", i, j)
-
+                    
+        Maximum_Score = -1000
         Minimum_Score = 1000
-        for z in Node.Children:
+        for _ in range(len(Node.Children)):
+            z = heapq.heappop(Node.Children)
             if Node.Current.player1_turn == z.Current.player1_turn:
-                Result = self.Minimum(z, Height - 1, Minimum_Score, Depth + 1, DepthLimit)
+                Result = self.Minimum(z, Height - 1, Maximum_Score, Depth + 1, DepthLimit)
+                if Maximum_Score < Result:
+                    Maximum_Score = Result
             else:
                 Result = self.Maximum(z, Height - 1, Minimum_Score, Depth + 1, DepthLimit)
-
+            
             if Minimum_Score > Result:
                 Minimum_Score = Result
             if Result < Beta:
                 return Result
-        
+                
         return Minimum_Score
                 
