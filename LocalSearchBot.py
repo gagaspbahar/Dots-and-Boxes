@@ -8,7 +8,13 @@ from copy import deepcopy
 
 class LocalSearchBot(Bot):
 
+    def __init__(self):
+        self.temp = None
+
     def get_action(self, GS: GameState) -> GameAction:
+        self.chosen_edge_row = [i for i in range(12)]
+        self.chosen_edge_col = [i for i in range(12)]
+
         self.state = GameState(GS.board_status, GS.row_status, GS.col_status, GS.player1_turn)
         self.player1_turn = self.state.player1_turn
         
@@ -55,43 +61,60 @@ class LocalSearchBot(Bot):
                 if abs(childState.board_status[j][i-1]) == 4:
                     pointScored = True
 
-        # P yg ini AttributeError: kant set attirbtutvc
             
-        # return childState
         return GameState(childState.board_status, childState.row_status, childState.col_status, childState.player1_turn if pointScored else not childState.player1_turn)
 
     def get_localsearch_action(self, state):
         start = time()
         print("START")
-        currScore = self.objective_function(state.board_status)
-        k = 0
-        l = 0
+
+        # currScore = self.objective_function(state.board_status)
+        currScore = -1000
+        del_idx_chosen = 0
+        chosen_i = 0
+        chosen_j = 0
+
         rowcol = ""
         print("currScore awal : ", currScore)
 
-        # Loop semua neighbor state
-        for i in range (3):
-            for j in range (4):
-                if state.row_status[j,i] == 0 and (i,j,"row") :
-                    succScore = self.objective_function(self.Move(i,j,"row",self.player1_turn).board_status)
-                    if succScore > currScore:
-                        currScore = succScore
-                        k = i
-                        l = j
-                        rowcol = "row"
-                        print("succscore (",k," ",l," :",  succScore)
-        
-        for i in range (4):
-            for j in range (3):
-                if state.col_status[j,i] == 0 and (i,j,"col"):
-                    succScore = self.objective_function(self.Move(i,j,"col",self.player1_turn).board_status)
-                    if succScore > currScore:
-                        currScore = succScore
-                        k = i
-                        l = j
-                        rowcol = "col"
-                        print("succscore (",k," ",l," :",  succScore)
+        for row in self.chosen_edge_row :
+            i, j  = row % 3 , row // 3
+            if state.row_status[j][i] == 1:
+                self.chosen_edge_col.remove(row)
+                continue
+            succScore = self.objective_function(self.Move(i,j,"row",False).board_status)
+            print("succscore || row || ", i ," ", j," :",  succScore)
+            if succScore > currScore:
+                currScore = succScore
+                del_idx_chosen = row
+                chosen_i = i
+                chosen_j = j
+                rowcol = "row"
+                print("succscore terpilih || ", rowcol ," || ",chosen_i," ",chosen_j," :",  succScore)
 
+
+        for col in self.chosen_edge_col :
+            i, j  = col % 4 , col // 4
+            if state.col_status[j][i] == 1:
+                self.chosen_edge_col.remove(col)
+                continue
+
+            succScore = self.objective_function(self.Move(i,j,"col",False).board_status)
+            print("succscore || col || ", i ," ", j," :",  succScore)
+            if succScore > currScore:
+                currScore = succScore
+                del_idx_chosen = col
+                chosen_i = i
+                chosen_j = j
+                rowcol = "col"
+                print("succscore terpilih || ", rowcol ," || ",chosen_i," ",chosen_j," :",  succScore)
+
+        if rowcol == "row":
+            self.chosen_edge_row.remove(del_idx_chosen)
+        else:
+            self.chosen_edge_col.remove(del_idx_chosen)
+
+        print("currscore akhir :", currScore)
         print("timetaken:", time() - start)
-        print("taken: ", 'row', (k,l))
-        return GameAction(rowcol, (k,l))
+        print("taken: ", rowcol, (chosen_i,chosen_j))
+        return GameAction(rowcol, (chosen_i,chosen_j))
