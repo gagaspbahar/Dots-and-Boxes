@@ -1,5 +1,6 @@
 from operator import indexOf
 from time import time
+from traceback import print_list
 from Bot import Bot
 from GameAction import GameAction
 from GameState import GameState
@@ -66,7 +67,7 @@ class LocalSearchBot(Bot):
 
     def get_localsearch_action(self, state):
         start = time()
-        print("START")
+        print("================START================")
 
         # currScore = self.objective_function(state.board_status)
         currScore = -1000
@@ -76,45 +77,91 @@ class LocalSearchBot(Bot):
 
         rowcol = ""
         print("currScore awal : ", currScore)
+        # print("Kondisi awal : ")
+        # print("Col : ")
+        # for i in self.chosen_edge_col:
+        #     print(i, end=" ")
+        # print("\nRow : ")
+        # for i in self.chosen_edge_row:
+        #     print(i, end=" ")
 
-        for row in self.chosen_edge_row :
-            i, j  = row % 3 , row // 3
-            if state.row_status[j][i] == 1:
-                self.chosen_edge_col.remove(row)
-                continue
-            succScore = self.objective_function(self.Move(i,j,"row",False).board_status)
-            print("succscore || row || ", i ," ", j," :",  succScore)
-            if succScore > currScore:
-                currScore = succScore
-                del_idx_chosen = row
-                chosen_i = i
-                chosen_j = j
-                rowcol = "row"
-                print("succscore terpilih || ", rowcol ," || ",chosen_i," ",chosen_j," :",  succScore)
+        # for row in self.chosen_edge_row :
+        #     i, j  = row % 3 , row // 3
+        #     if state.row_status[j][i] == 1:
+        #         self.chosen_edge_row.remove(row)
+        #         continue
+        #     succScore = self.objective_function(self.Move(i,j,"row",False).board_status)
+        #     print("succscore || row || ", i ," ", j," :",  succScore)
+        #     if succScore > currScore:
+        #         currScore = succScore
+        #         del_idx_chosen = row
+        #         chosen_i = i
+        #         chosen_j = j
+        #         rowcol = "row"
+        #         print("succscore terpilih || ", rowcol ," || ",chosen_i," ",chosen_j," :",  succScore)
 
 
-        for col in self.chosen_edge_col :
-            i, j  = col % 4 , col // 4
-            if state.col_status[j][i] == 1:
-                self.chosen_edge_col.remove(col)
-                continue
+        # for col in self.chosen_edge_col :
+        #     i, j  = col % 4 , col // 4
+        #     if state.col_status[j][i] == 1:
+        #         self.chosen_edge_col.remove(col)
+        #         continue
 
-            succScore = self.objective_function(self.Move(i,j,"col",False).board_status)
-            print("succscore || col || ", i ," ", j," :",  succScore)
-            if succScore > currScore:
-                currScore = succScore
-                del_idx_chosen = col
-                chosen_i = i
-                chosen_j = j
-                rowcol = "col"
-                print("succscore terpilih || ", rowcol ," || ",chosen_i," ",chosen_j," :",  succScore)
+        #     succScore = self.objective_function(self.Move(i,j,"col",False).board_status)
+        #     print("succscore || col || ", i ," ", j," :",  succScore)
+        #     if succScore > currScore:
+        #         currScore = succScore
+        #         del_idx_chosen = col
+        #         chosen_i = i
+        #         chosen_j = j
+        #         rowcol = "col"
+        #         print("succscore terpilih || ", rowcol ," || ",chosen_i," ",chosen_j," :",  succScore)
 
-        if rowcol == "row":
-            self.chosen_edge_row.remove(del_idx_chosen)
-        else:
-            self.chosen_edge_col.remove(del_idx_chosen)
+        for i in range(3) :
+            for j in range(4) :
+                if state.row_status[j][i] == 1:
+                    continue
+                succScore = self.objective_function(self.Move(i,j,"row",False).board_status)
+                print("succscore || row || ", i ," ", j," :",  succScore)
+                if succScore > currScore:
+                    currScore = succScore
+                    # del_idx_chosen = row
+                    chosen_i = i
+                    chosen_j = j
+                    rowcol = "row"
+                    print("succscore terpilih || ", rowcol ," || ",chosen_i," ",chosen_j," :",  succScore)
 
-        print("currscore akhir :", currScore)
+        for i in range(4) :
+            for j in range(3) :
+                if state.col_status[j][i] == 1:
+                    continue
+                succScore = self.objective_function(self.Move(i,j,"col",False).board_status)
+                print("succscore || col || ", i ," ", j," :",  succScore)
+                if succScore > currScore:
+                    currScore = succScore
+                    # del_idx_chosen = col
+                    chosen_i = i
+                    chosen_j = j
+                    rowcol = "col"
+                    print("succscore terpilih || ", rowcol ," || ",chosen_i," ",chosen_j," :",  succScore)
+
+
+        # if rowcol == "row":
+        #     print("hapus row : ", del_idx_chosen)
+        #     self.chosen_edge_row.remove(del_idx_chosen)
+        # else:
+        #     print("hapus col : ", del_idx_chosen)
+        #     self.chosen_edge_col.remove(del_idx_chosen)
+
+        # print("Kondisi akhir : ")
+        # print("Col : ")
+        # for i in range(len(self.chosen_edge_col)):
+        #     print(self.chosen_edge_col[i], end=" ")
+        # print("\nRow : ")
+        # for i in range(len(self.chosen_edge_row)):
+        #     print(self.chosen_edge_row[i], end=" ")
+
+        print("\ncurrscore akhir :", currScore)
         print("timetaken:", time() - start)
         print("taken: ", rowcol, (chosen_i,chosen_j))
         return GameAction(rowcol, (chosen_i,chosen_j))
