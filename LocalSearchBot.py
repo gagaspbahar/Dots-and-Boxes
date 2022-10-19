@@ -9,9 +9,14 @@ from copy import deepcopy
 
 class LocalSearchBot(Bot):
 
+    #### INIT
     def __init__(self):
         self.temp = None
 
+    #### GET ACTION
+    # Metode yang digunakan untuk mencari tahu aksi yang akan dilakukan oleh bot
+    # Return:
+    #   GameAction
     def get_action(self, GS: GameState) -> GameAction:
         self.initial_state = GS
         self.chosen_edge_row = set()
@@ -28,6 +33,10 @@ class LocalSearchBot(Bot):
         
         return self.get_localsearch_action(self.state)
 
+    #### OBJECTIVE FUNCTION
+    # Metode yang digunakan untuk menghitung nilai dari suatu state
+    # Return:
+    #   int
     def objective_function(self, board_status):
         currentScore = 0
         playerModifier = 1
@@ -50,6 +59,11 @@ class LocalSearchBot(Bot):
                 currentScore += 10*(newThreeLine)
         return currentScore
 
+    #### MOVE
+    # Metode yang digunakan untuk menghitung nilai dari suatu state 
+    # dengan melakukan perubahan pada state tersebut
+    # Return:
+    #   int
     def Move(self, i, j, rowcol):
         childState = deepcopy(self.state)
         playerModifier = 1
@@ -73,6 +87,11 @@ class LocalSearchBot(Bot):
             
         return self.objective_function(childState.board_status)
 
+    #### ERASE FIELD BOARD
+    # Metode yang digunakan untuk menghapus field yang sudah terisi
+    # dari list
+    # Return:
+    #   None
     def erase_field_board(self):
         for i in range(3) :
             for j in range(4):
@@ -83,9 +102,12 @@ class LocalSearchBot(Bot):
             for j in range(3) :
                 if self.state.col_status[j,i] == 1:
                     self.chosen_edge_col.remove((i,j))
-        print("ROW",self.chosen_edge_row)
-        print("COL",self.chosen_edge_col)
 
+    #### GET LOCAL SEARCH ACTION
+    # Metode yang digunakan untuk mencari tahu aksi yang akan diambil
+    # dengan mengimplementasikan random restart hill-climbing
+    # Return:
+    #   GameAction
     def get_localsearch_action(self, state):
         start = time()
         self.erase_field_board()
@@ -181,28 +203,5 @@ class LocalSearchBot(Bot):
                 self.chosen_edge_col.remove((chosen_i,chosen_j))
 
             currScore = worstCurrScore
-                
-
-            # orient = random.randint(0,2)
-            # if len(self.chosen_edge_row) == 0:
-            #     orient = 1
-            # if len(self.chosen_edge_col) == 0:
-            #     orient = 0
-            # print("dari bawah random")
-            # if orient == 0:
-            #     idx_chosen = random.randint(0,len(self.chosen_edge_row))
-            #     chosen_i = (list(self.chosen_edge_row))[idx_chosen][0]
-            #     chosen_j = (list(self.chosen_edge_row))[idx_chosen][1]
-            #     rowcol = "row"
-            #     currScore = self.Move(chosen_i,chosen_j,"row")
-            # else:
-            #     idx_chosen = random.randint(0,len(self.chosen_edge_col))
-            #     chosen_i = (list(self.chosen_edge_col))[idx_chosen][0]
-            #     chosen_j = (list(self.chosen_edge_col))[idx_chosen][1]
-            #     rowcol = "col"
-            #     currScore = self.Move(chosen_i,chosen_j,"col")
             
-        print("\ncurrscore akhir :", currScore)
-        print("timetaken:", time() - start)
-        print("taken: ", rowcol, (chosen_i,chosen_j))
         return GameAction(rowcol, (chosen_i,chosen_j))

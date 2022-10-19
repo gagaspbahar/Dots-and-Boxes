@@ -17,6 +17,10 @@ class Nodes():
     def __lt__(self, other):
         return self.ScoreWithThreeline > other.ScoreWithThreeline
 
+    #### MAKE
+    # Metode yang digunakan untuk membuat node baru
+    # Input: i, j, rowcol, myTurn
+    # Output: Node baru
     def Make(self, i, j, rowcol, myTurn):
         childState = deepcopy(self.Current)
         playerModifier = 1
@@ -52,8 +56,6 @@ class Nodes():
         else:
             nextTurn = childState.player1_turn
         
-
-
         if not myTurn:   
         # if minimax bot player2
             initial_player_score = len(argwhere(self.Current.board_status == 4))

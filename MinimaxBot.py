@@ -7,6 +7,11 @@ from GameState import GameState
 from Nodes import Nodes
 
 class MinimaxBot(Bot):
+
+    #### GET ACTION
+    # Metode yang digunakan untuk mencari tahu aksi yang akan dilakukan oleh bot
+    # Return:
+    #   GameAction
     def get_action(self, state: GameState) -> GameAction:
         self.player1_turn = state.player1_turn
         count = 0
@@ -23,6 +28,10 @@ class MinimaxBot(Bot):
         Node = Nodes(state.board_status, state.row_status, state.col_status, state.player1_turn)
         return self.get_minimax_action(Node, count, 1)  
     
+    #### DYNAMIC DEPTH LIMIT
+    # Metode yang digunakan untuk menentukan batas kedalaman pencarian
+    # Return:
+    #   int
     def dynamic_depth_limit(self, depth) -> int:
         if depth < 8:
           return 4
@@ -35,7 +44,11 @@ class MinimaxBot(Bot):
         else:
           return 25 - depth
 
-
+    #### GET MINIMAX ACTION
+    # Metode yang digunakan untuk mencari tahu aksi yang akan diambil
+    # dengan mengimplementasikan algoritma minimax dan alpha beta pruning
+    # Return:
+    #   GameAction
     def get_minimax_action(self, Node, Height, Depth):
         for i in range (3):
             for j in range (4):
@@ -69,6 +82,10 @@ class MinimaxBot(Bot):
 
         return GameAction(rowcol, (i,j))
 
+    #### MAXIMUM
+    # Metode yang digunakan untuk mencari nilai maksimum dari suatu node
+    # Return:
+    #   int
     def Maximum(self, Node, Height, Alpha, Depth, DepthLimit):
         if Height == 0 or Depth == DepthLimit:
             return Node.CurrentScore
@@ -101,6 +118,10 @@ class MinimaxBot(Bot):
 
         return Maximum_Score
 
+    #### MINIMUM
+    # Metode yang digunakan untuk mencari nilai minimum dari suatu node
+    # Return:
+    #   int
     def Minimum(self, Node, Height, Beta, Depth, DepthLimit):
         if Height == 0 or Depth == DepthLimit:
             return Node.CurrentScore

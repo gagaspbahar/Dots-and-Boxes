@@ -6,6 +6,7 @@
 from tkinter import *
 from LocalSearchBot import LocalSearchBot
 import numpy as np
+from time import time
 from typing import Optional
 from Bot import Bot
 from GameState import GameState
@@ -41,6 +42,7 @@ class Dots_and_Boxes():
         self.canvas.pack()
         self.player1_starts = True
         self.refresh_board()
+        self.start = time() #apus nanti
 
         self.bot1 = bot1
         self.bot2 = bot2
@@ -287,6 +289,7 @@ class Dots_and_Boxes():
                 # self.canvas.delete("all")
                 self.display_gameover()
                 self.window.bind(LEFT_CLICK, self.click)
+                print("Waktu Pertandingan:", time() - self.start)
             else:
                 self.display_turn_text()
                 self.turn()
@@ -310,9 +313,9 @@ class Dots_and_Boxes():
 
 if __name__ == "__main__":
     # game_instance = Dots_and_Boxes(LocalSearchBot(), RandomBot())
-    game_instance = Dots_and_Boxes(RandomBot(), LocalSearchBot())
+    # game_instance = Dots_and_Boxes(RandomBot(), LocalSearchBot())
     # game_instance = Dots_and_Boxes(None, MinimaxBot())
     # game_instance = Dots_and_Boxes(RandomBot(), MinimaxBot())
-    # game_instance = Dots_and_Boxes(MinimaxBot(), LocalSearchBot())
+    game_instance = Dots_and_Boxes(LocalSearchBot(), None)
     # game_instance = Dots_and_Boxes( LocalSearchBot(), MinimaxBot())
     game_instance.mainloop()
