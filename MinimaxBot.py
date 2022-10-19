@@ -1,10 +1,11 @@
 import heapq
-from operator import indexOf
-from time import time
+import numpy as np
+import random
 from Bot import Bot
 from GameAction import GameAction
 from GameState import GameState
 from Nodes import Nodes
+from timeout_decorator import exit_after
 
 class MinimaxBot(Bot):
 
@@ -26,7 +27,13 @@ class MinimaxBot(Bot):
         count = 24-count
 
         Node = Nodes(state.board_status, state.row_status, state.col_status, state.player1_turn)
-        return self.get_minimax_action(Node, count, 1)  
+
+        try:
+            action = self.get_minimax_action(Node, count, 1)
+        except KeyboardInterrupt:
+            print("timed out")
+            return self.get_random_action(state)
+        return action 
     
     #### DYNAMIC DEPTH LIMIT
     # Metode yang digunakan untuk menentukan batas kedalaman pencarian
@@ -42,13 +49,14 @@ class MinimaxBot(Bot):
         elif depth < 16:
           return 7
         else:
-          return 25 - depth
+          return 8
 
     #### GET MINIMAX ACTION
     # Metode yang digunakan untuk mencari tahu aksi yang akan diambil
     # dengan mengimplementasikan algoritma minimax dan alpha beta pruning
     # Return:
     #   GameAction
+    @exit_after(5)
     def get_minimax_action(self, Node, Height, Depth):
         for i in range (3):
             for j in range (4):
@@ -79,7 +87,6 @@ class MinimaxBot(Bot):
                 i = k[0]
                 j = k[1]
                 rowcol = k[2]
-
         return GameAction(rowcol, (i,j))
 
     #### MAXIMUM
@@ -153,4 +160,31 @@ class MinimaxBot(Bot):
                 return Result
                 
         return Minimum_Score
-                
+
+    def get_random_action(self, state: GameState) -> GameAction:
+        if random.random() < 0.5:
+            return self.get_random_row_action(state)
+        else:
+            return self.get_random_col_action(state)
+
+    def get_random_row_action(self, state: GameState) -> GameAction:
+        position = self.get_random_position_with_zero_value(state.row_status)
+        return GameAction("row", position)
+
+    def get_random_position_with_zero_value(self, matrix: np.ndarray):
+        [ny, nx] = matrix.shape
+
+        x = -1
+        y = -1
+        valid = False
+        
+        while not valid:
+            x = random.randrange(0, nx)
+            y = random.randrange(0, ny)
+            valid = matrix[y, x] == 0
+        
+        return (x, y)
+
+    def get_random_col_action(self, state: GameState) -> GameAction:
+        position = self.get_random_position_with_zero_value(state.col_status)
+        return GameAction("col", position)

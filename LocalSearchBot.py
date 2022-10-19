@@ -1,11 +1,10 @@
-from operator import indexOf
-from time import time, sleep
-from traceback import print_list
+from time import time
 from Bot import Bot
 from GameAction import GameAction
 from GameState import GameState
-from numpy import argwhere, random, exp, sum
+from numpy import argwhere, random, ndarray
 from copy import deepcopy
+from timeout_decorator import exit_after
 
 class LocalSearchBot(Bot):
 
@@ -31,7 +30,13 @@ class LocalSearchBot(Bot):
         self.state = GameState(GS.board_status, GS.row_status, GS.col_status, GS.player1_turn)
         self.player1_turn = self.state.player1_turn
         
-        return self.get_localsearch_action(self.state)
+        try:
+            action = self.get_localsearch_action(self.state)
+        except KeyboardInterrupt:
+            print("timed out")
+            return self.get_random_action(self.state)
+
+        return action
 
     #### OBJECTIVE FUNCTION
     # Metode yang digunakan untuk menghitung nilai dari suatu state
@@ -108,6 +113,7 @@ class LocalSearchBot(Bot):
     # dengan mengimplementasikan random restart hill-climbing
     # Return:
     #   GameAction
+    @exit_after(5)
     def get_localsearch_action(self, state):
         start = time()
         self.erase_field_board()
@@ -205,3 +211,30 @@ class LocalSearchBot(Bot):
             currScore = worstCurrScore
             
         return GameAction(rowcol, (chosen_i,chosen_j))
+    def get_random_action(self, state: GameState) -> GameAction:
+        if random.random() < 0.5:
+            return self.get_random_row_action(state)
+        else:
+            return self.get_random_col_action(state)
+
+    def get_random_row_action(self, state: GameState) -> GameAction:
+        position = self.get_random_position_with_zero_value(state.row_status)
+        return GameAction("row", position)
+
+    def get_random_position_with_zero_value(self, matrix: ndarray):
+        [ny, nx] = matrix.shape
+
+        x = -1
+        y = -1
+        valid = False
+        
+        while not valid:
+            x = random.randrange(0, nx)
+            y = random.randrange(0, ny)
+            valid = matrix[y, x] == 0
+        
+        return (x, y)
+
+    def get_random_col_action(self, state: GameState) -> GameAction:
+        position = self.get_random_position_with_zero_value(state.col_status)
+        return GameAction("col", position)

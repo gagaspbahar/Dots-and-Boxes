@@ -312,10 +312,10 @@ class Dots_and_Boxes():
         self.update(action.action_type, action.position)
 
 if __name__ == "__main__":
-    # game_instance = Dots_and_Boxes(LocalSearchBot(), RandomBot())
+    game_instance = Dots_and_Boxes(LocalSearchBot(), RandomBot())
     # game_instance = Dots_and_Boxes(RandomBot(), LocalSearchBot())
     # game_instance = Dots_and_Boxes(None, MinimaxBot())
     # game_instance = Dots_and_Boxes(RandomBot(), MinimaxBot())
-    game_instance = Dots_and_Boxes(LocalSearchBot(), None)
+    # game_instance = Dots_and_Boxes(LocalSearchBot(), None)
     # game_instance = Dots_and_Boxes( LocalSearchBot(), MinimaxBot())
     game_instance.mainloop()
