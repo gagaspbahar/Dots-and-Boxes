@@ -1,5 +1,5 @@
 from operator import indexOf
-from time import time
+from time import time, sleep
 from traceback import print_list
 from Bot import Bot
 from GameAction import GameAction
@@ -13,8 +13,10 @@ class LocalSearchBot(Bot):
         self.temp = None
 
     def get_action(self, GS: GameState) -> GameAction:
+        self.initial_state = GS
         self.chosen_edge_row = set()
         self.chosen_edge_col = set()
+        self.player1_turn = GS.player1_turn
 
         for i in range(3):
             for j in range(4):
@@ -28,47 +30,48 @@ class LocalSearchBot(Bot):
 
     def objective_function(self, board_status):
         currentScore = 0
+        playerModifier = 1
 
-        enemy_score = len(argwhere(board_status == -4))
-        player_score = len(argwhere(board_status == 4))
-        currentScore = 20*(player_score - enemy_score)
+        if self.player1_turn:
+            playerModifier = -1
+
+        initial_player_score = len(argwhere(self.initial_state.board_status == (4 * playerModifier)))
+        enemy_score = len(argwhere(board_status == (-4 * playerModifier)))
+        player_score = len(argwhere(board_status == (4 * playerModifier)))
+        
+
+        currentScore = 100*(player_score - initial_player_score)
         
         if player_score + enemy_score != 9:
             newThreeLine = len(argwhere(abs(board_status) == 3))
-            currentScore -= 10*(newThreeLine)
-        
+            if (initial_player_score - player_score >= 0):
+                currentScore -= 10*(newThreeLine)
+            else:
+                currentScore += 10*(newThreeLine)
         return currentScore
 
-    def Move(self, i, j, rowcol, turn):
+    def Move(self, i, j, rowcol):
         childState = deepcopy(self.state)
         playerModifier = 1
-        pointScored = False
-        nextTurn = True
 
-        if childState.player1_turn != turn:
+        if self.player1_turn:
             playerModifier = -1
         
         if j < 3 and i < 3:
             childState.board_status[j][i] = (abs(childState.board_status[j][i]) + 1) * playerModifier
-            if abs(childState.board_status[j][i]) == 4:
-                pointScored = True
 
         if rowcol == 'row':
             childState.row_status[j][i] = 1
             if j >= 1:
                 childState.board_status[j-1][i] = (abs(childState.board_status[j-1][i]) + 1) * playerModifier
-                if abs(childState.board_status[j-1][i]) == 4:
-                    pointScored = True
 
         elif rowcol == 'col':
             childState.col_status[j][i] = 1
             if i >= 1:
                 childState.board_status[j][i-1] = (abs(childState.board_status[j][i-1]) + 1) * playerModifier
-                if abs(childState.board_status[j][i-1]) == 4:
-                    pointScored = True
 
             
-        return GameState(childState.board_status, childState.row_status, childState.col_status, childState.player1_turn if pointScored else not childState.player1_turn)
+        return self.objective_function(childState.board_status)
 
     def erase_field_board(self):
         for i in range(3) :
@@ -88,20 +91,19 @@ class LocalSearchBot(Bot):
         self.erase_field_board()
 
         currScore = self.objective_function(self.state.board_status)
-        del_idx_chosen = 0
         chosen_i = 0
         chosen_j = 0
         rowcol = ""
         proceed = False
 
         for check_i,check_j in self.chosen_edge_row:
-            if self.objective_function(self.Move(check_i,check_j,"row",False).board_status) > currScore:
+            if self.Move(check_i,check_j,"row") > currScore:
                 proceed = True
                 break
         
         if not proceed:
             for check_i,check_j in self.chosen_edge_col:
-                if self.objective_function(self.Move(check_i,check_j,"col",False).board_status) > currScore:
+                if self.Move(check_i,check_j,"col") > currScore:
                     proceed = True
                     break
 
@@ -122,7 +124,7 @@ class LocalSearchBot(Bot):
                         try_i = random.randint(0,3)
                         try_j = random.randint(0,4)
                     
-                    succScore = self.objective_function(self.Move(try_i,try_j,"row",False).board_status)
+                    succScore = self.Move(try_i,try_j,"row")
                     if succScore > currScore :
                         currScore = succScore
                         chosen_i = try_i
@@ -139,7 +141,7 @@ class LocalSearchBot(Bot):
                         try_i = random.randint(0,4)
                         try_j = random.randint(0,3)
                     
-                    succScore = self.objective_function(self.Move(try_i,try_j,"col",False).board_status)
+                    succScore = self.Move(try_i,try_j,"col")
                     if succScore > currScore:
                         currScore = succScore
                         chosen_i = try_i
@@ -147,23 +149,58 @@ class LocalSearchBot(Bot):
                         rowcol = "col"
                         self.chosen_edge_col.remove((try_i,try_j))
                         break
+
         else:
-            orient = random.randint(0,2)
-            if len(self.chosen_edge_row) == 0:
-                orient = 1
-            if len(self.chosen_edge_col) == 0:
-                orient = 0
-            
-            if orient == 0:
-                idx_chosen = random.randint(0,len(self.chosen_edge_row))
-                chosen_i = (list(self.chosen_edge_row))[idx_chosen][0]
-                chosen_j = (list(self.chosen_edge_row))[idx_chosen][1]
-                rowcol = "row"
+            worstCurrScore = -1000
+            for check_i,check_j in self.chosen_edge_row:
+                succScore = self.Move(check_i,check_j,"row")
+
+                if succScore >= worstCurrScore:
+                    worstCurrScore = succScore
+                    chosen_i = check_i
+                    chosen_j = check_j
+                    rowcol = "row"
+                    if worstCurrScore == currScore:
+                        break
+
+            if worstCurrScore != currScore:
+                for check_i,check_j in self.chosen_edge_col:
+                    succScore = self.Move(check_i,check_j,"col")
+                    
+                    if succScore >= worstCurrScore:
+                        worstCurrScore = succScore
+                        chosen_i = check_i
+                        chosen_j = check_j
+                        rowcol = "col"
+                        if worstCurrScore == currScore:
+                            break
+    
+            if rowcol == "row" :
+                self.chosen_edge_row.remove((chosen_i,chosen_j))
             else:
-                idx_chosen = random.randint(0,len(self.chosen_edge_col))
-                chosen_i = (list(self.chosen_edge_col))[idx_chosen][0]
-                chosen_j = (list(self.chosen_edge_col))[idx_chosen][1]
-                rowcol = "col"
+                self.chosen_edge_col.remove((chosen_i,chosen_j))
+
+            currScore = worstCurrScore
+                
+
+            # orient = random.randint(0,2)
+            # if len(self.chosen_edge_row) == 0:
+            #     orient = 1
+            # if len(self.chosen_edge_col) == 0:
+            #     orient = 0
+            # print("dari bawah random")
+            # if orient == 0:
+            #     idx_chosen = random.randint(0,len(self.chosen_edge_row))
+            #     chosen_i = (list(self.chosen_edge_row))[idx_chosen][0]
+            #     chosen_j = (list(self.chosen_edge_row))[idx_chosen][1]
+            #     rowcol = "row"
+            #     currScore = self.Move(chosen_i,chosen_j,"row")
+            # else:
+            #     idx_chosen = random.randint(0,len(self.chosen_edge_col))
+            #     chosen_i = (list(self.chosen_edge_col))[idx_chosen][0]
+            #     chosen_j = (list(self.chosen_edge_col))[idx_chosen][1]
+            #     rowcol = "col"
+            #     currScore = self.Move(chosen_i,chosen_j,"col")
             
         print("\ncurrscore akhir :", currScore)
         print("timetaken:", time() - start)

@@ -25,7 +25,7 @@ class Nodes():
         currentScore = 0
         scoreWithThreeLine = 0
         threeLine = len(argwhere(abs(self.Current.board_status) == 3))
-        if childState.player1_turn != myTurn:
+        if childState.player1_turn:
             playerModifier = -1
         
         if j < 3 and i < 3:
@@ -53,11 +53,17 @@ class Nodes():
             nextTurn = childState.player1_turn
         
 
-        # if minimax bot player2
-        initial_player_score = len(argwhere(self.Current.board_status == 4))
-        enemy_score = len(argwhere(childState.board_status == -4))
-        player_score = len(argwhere(childState.board_status == 4))
 
+        if not myTurn:   
+        # if minimax bot player2
+            initial_player_score = len(argwhere(self.Current.board_status == 4))
+            enemy_score = len(argwhere(childState.board_status == -4))
+            player_score = len(argwhere(childState.board_status == 4))
+        else:
+        # if minimax p1
+            initial_player_score = len(argwhere(self.Current.board_status == -4))
+            enemy_score = len(argwhere(childState.board_status == 4))
+            player_score = len(argwhere(childState.board_status == -4))
 
         currentScore = 20*(player_score - enemy_score)
 

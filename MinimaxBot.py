@@ -61,7 +61,6 @@ class MinimaxBot(Bot):
             k = data.Position
             z = data
             Result = self.Minimum(z, Height - 1, MaxScore, Depth+1, initialDepthLimit)
-            print(k, " ", Result)
             if MaxScore < Result:
                 MaxScore = Result
                 i = k[0]
